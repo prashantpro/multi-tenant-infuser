@@ -1,4 +1,4 @@
-package org.prashantp.multitenant;
+package org.tanmayra.multitenant;
 
 import java.util.Map;
 import java.util.Set;

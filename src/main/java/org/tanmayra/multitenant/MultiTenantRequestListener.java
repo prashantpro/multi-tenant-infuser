@@ -1,4 +1,4 @@
-package org.prashantp.multitenant;
+package org.tanmayra.multitenant;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;

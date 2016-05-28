@@ -1,4 +1,4 @@
-package org.prashantp.multitenant;
+package org.tanmayra.multitenant;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,7 +8,7 @@ import java.util.logging.Logger;
 import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
 
-import org.prashantp.multitenant.WebTenantResolver.TenantResolver;
+import org.tanmayra.multitenant.WebTenantResolver.TenantResolver;
 
 /**
  *

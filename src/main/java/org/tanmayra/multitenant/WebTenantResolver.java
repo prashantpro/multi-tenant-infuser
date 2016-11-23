@@ -54,10 +54,20 @@ public class WebTenantResolver {
     }
 
     private static Tenant resolve(String clientIdentifierKey) {
-        return tenantMap.get(clientIdentifierKey);
+    	Tenant target = tenantMap.get(clientIdentifierKey);
+    	return target != null ? target : resolveByContains(clientIdentifierKey);
     }
 
-    static Set<String> registerTenants(TenantProperties properties) {
+    private static Tenant resolveByContains(String clientIdentifierKey) {
+    	logger.log(Level.FINE,"Check for contains tenant ID for [" + clientIdentifierKey  +"]");
+		Set<String> tenantIDkeys = tenantMap.keySet();
+		for(String IDkey : tenantIDkeys) {
+			if(IDkey.contains(clientIdentifierKey)) return tenantMap.get(IDkey);
+		}
+		return null;
+	}
+
+	static Set<String> registerTenants(TenantProperties properties) {
         String tenantsValue = properties.getProperty("tenants");
         if(tenantsValue == null || tenantsValue.length() == 0) {
             logger.log(Level.WARNING, "No tenants configured in property file");

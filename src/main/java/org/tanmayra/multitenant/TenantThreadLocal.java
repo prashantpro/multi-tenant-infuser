@@ -4,7 +4,7 @@ package org.tanmayra.multitenant;
  *
  * @author prashant
  */
-class TenantThreadLocal {
+public class TenantThreadLocal {
 
     public static final ThreadLocal<String> tenantThreadLocal = new ThreadLocal<String>();
 

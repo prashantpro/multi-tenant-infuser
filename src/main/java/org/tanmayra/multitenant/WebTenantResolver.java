@@ -20,44 +20,37 @@ public class WebTenantResolver {
     private static final Map<String, Tenant> tenantMap = new ConcurrentHashMap<String, Tenant>();
     private static String[] tenants;
     private static TenantProperties tenantProperties;
-    
-    private static TenantResolver resolverType = TenantResolver.CONTEXT;
+    private static TenantIdExtractor extractor;
+    private static TenantIdExtractor contextExtractor = TenantIdExtractorFactory.create(TenantResolverType.CONTEXT);
 
-    enum TenantResolver {
-        DNS, CONTEXT, THREAD;
+    public static void setResolver(String value) {
+        final TenantResolverType resolverType = TenantResolverType.valueOf(value);
+        WebTenantResolver.extractor = TenantIdExtractorFactory.create(resolverType);
     }
 
-    public static void setResolverStrategy(TenantResolver resolver) {
-        resolverType = resolver;
-    }
-
-    static Tenant resolve(HttpServletRequest request) throws Exception {
-        switch (resolverType) {
-            case CONTEXT: {
-                logger.log(Level.FINE,"CONTEXT tenant - {}", request.getContextPath());
-                return resolve(request.getContextPath());
-            }
-            case DNS: {
-//              String domain = new URL(request.getRequestURL().toString()).getHost(); 
-//              String domain = request.getServerName();
-                String domain = request.getHeader("X-forwarded-host");
-                logger.log(Level.FINE,"DNS tenant - {}", domain);
-                return resolve(domain);
-            }
-            case THREAD: {
-                logger.log(Level.FINE,"ThreadLocal tenant - ");
-                TenantThreadLocal.setTenantId("ooc");
-                return resolve(TenantThreadLocal.getTenantId());
-            }
+    static Tenant resolve(final HttpServletRequest request) throws Exception {
+        if (WebTenantResolver.extractor == null) {
+            throw new IllegalStateException("TenantIdExtractor not set");
         }
-        return null;
+        Tenant target = lookup(WebTenantResolver.extractor.extractId(request));
+        if (target == null) {
+            target = fallbackToContextBasedLookup(request);
+        }
+        return target;
     }
 
-    private static Tenant resolve(String clientIdentifierKey) {
-        return tenantMap.get(clientIdentifierKey);
+    private static Tenant fallbackToContextBasedLookup(final HttpServletRequest request) {
+        return lookup(WebTenantResolver.contextExtractor.extractId(request));
+    }
+    
+    private static Tenant lookup(final String clientIdentifierKey) {
+        if (clientIdentifierKey == null) {
+            return null;
+        }
+        return WebTenantResolver.tenantMap.get(clientIdentifierKey);
     }
 
-    static Set<String> registerTenants(TenantProperties properties) {
+    static Set<String> registerTenants(final TenantProperties properties) {
         String tenantsValue = properties.getProperty("tenants");
         if(tenantsValue == null || tenantsValue.length() == 0) {
             logger.log(Level.WARNING, "No tenants configured in property file");
@@ -77,8 +70,22 @@ public class WebTenantResolver {
             if(clientIdentifierKey == null) {
                 throw new IllegalArgumentException("Couldn't find the key [" + tenantKey +"." + "ID] in properties file");
             }
-            tenantMap.put(clientIdentifierKey, new Tenant(clientIdentifierKey, tenantKey, allProperties));
+            final String[] splitIDs = clientIdentifierKey.split(",");
+            String[] array;
+            for (int length2 = (array = splitIDs).length, j = 0; j < length2; ++j) {
+                final String uniqueId = array[j];
+                WebTenantResolver.tenantMap.put(uniqueId, new Tenant(uniqueId, tenantKey, allProperties));
+            }
         }
         return tenantMap.keySet();
+    }
+
+    enum TenantResolverType {
+        DNS("DNS", 0), 
+        CONTEXT("CONTEXT", 1), 
+        THREAD("THREAD", 2);
+        
+        private TenantResolverType(final String name, final int ordinal) {
+        }
     }
 }

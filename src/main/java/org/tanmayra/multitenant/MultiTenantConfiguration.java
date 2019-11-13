@@ -8,7 +8,7 @@ import java.util.logging.Logger;
 import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
 
-import org.tanmayra.multitenant.WebTenantResolver.TenantResolver;
+import org.tanmayra.multitenant.WebTenantResolver.TenantResolverType;
 
 /**
  *
@@ -17,7 +17,7 @@ import org.tanmayra.multitenant.WebTenantResolver.TenantResolver;
 class MultiTenantConfiguration {
 
     private static final Logger LOGGER = Logger.getLogger(MultiTenantConfiguration.class.getName());
-
+    
     private MultiTenantConfiguration() {}
     
     static void setup(FacesContext context) {
@@ -32,11 +32,10 @@ class MultiTenantConfiguration {
     private static void initTenantProperties(ServletContext context) {
         String value = null;
         value = context.getInitParameter(TenantContextParams.TENANT_RESOLVER);
-        value = (value != null) ? value.toUpperCase() : TenantResolver.THREAD.toString();
+        value = (value != null) ? value.toUpperCase() : TenantResolverType.THREAD.toString();
 
-        TenantResolver resolverStrategy = WebTenantResolver.TenantResolver.valueOf(value);
-        WebTenantResolver.setResolverStrategy(resolverStrategy);
-
+        WebTenantResolver.setResolver(value);
+        
         value = context.getInitParameter(TenantContextParams.TENANT_PROPERTIES);
         value = (value != null) ? value : ("/" + TenantContextParams.TENANT_PROPERTIES_FILE);
         

@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 class MultiTenantRequestListener implements ServletRequestListener {
     private static final Logger logger = java.util.logging.Logger.getLogger(MultiTenantRequestListener.class.getName());
     
+    @Override
     public void requestDestroyed(ServletRequestEvent event) {
         logger.log(Level.FINE,"Destorying MultiTenantRequestListener - request");
         final HttpServletRequest request = (HttpServletRequest) event.getServletRequest();
@@ -22,18 +23,19 @@ class MultiTenantRequestListener implements ServletRequestListener {
         request.removeAttribute(WebTenantResolver.CURRENT_TENANT);
     }
 
+    @Override
     public void requestInitialized(ServletRequestEvent event) {
         logger.log(Level.FINE, "Initiating MultiTenantRequestListener - request");
         final HttpServletRequest request = (HttpServletRequest) event.getServletRequest();
         final String path = request.getServletPath();
         logger.log(Level.FINE, "Request URL Path is {}", path);
-        
-        loadTenant(request);
+        if(!path.contains("multi-tenant-config")) {
+        	loadTenant(request);
+        }
     }
 
     private void loadTenant(HttpServletRequest request) {
         try {
-
             Tenant resolvedTenant = WebTenantResolver.resolve(request);
             
             request.setAttribute(WebTenantResolver.CURRENT_TENANT, resolvedTenant);

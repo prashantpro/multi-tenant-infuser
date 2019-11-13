@@ -13,4 +13,8 @@ class TenantProperties extends Properties {
     public String getPrefixedProperty(String tenantPrefix, String key) {
         return getProperty(tenantPrefix + DELIMITER + key);
     }
+    
+    public void setPrefixedProperty(String tenantPrefix, String key, String value) {
+        setProperty(tenantPrefix + DELIMITER + key, value);
+    }
 }

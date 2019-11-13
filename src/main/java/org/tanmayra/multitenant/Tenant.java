@@ -49,7 +49,13 @@ public class Tenant implements Serializable {
     }
 
     public String getProperty(String key) {
-        return this.properties.getPrefixedProperty(tenantPrefix,key);
+        String value = this.properties.getPrefixedProperty(
+            String.valueOf(this.tenantPrefix) + "." + this.getClientIdentifierValue(), 
+            key);
+        if (value == null) {
+            value = this.properties.getPrefixedProperty(this.tenantPrefix, key);
+        }
+        return value;
     }
     
     @Override

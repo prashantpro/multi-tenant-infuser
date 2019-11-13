@@ -35,5 +35,4 @@ public class ThreadLocalIdExtractor implements TenantIdExtractor {
         TenantThreadLocal.setTenantId("ooc");
         return TenantThreadLocal.getTenantId();
     }
-
 }
